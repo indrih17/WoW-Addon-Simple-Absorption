@@ -1,0 +1,8 @@
+## Interface: 120001, 120000 
+## Title: SimpleAbsorb
+## Notes: SimpleAbsorb
+## Author: Mainx
+## Version: 1.0
+## OptionalDeps: LibSharedMedia-3.0
+## SavedVariablesPerCharacter: SimpleAbsorbDB
+SimpleAbsorb.lua
