@@ -58,3 +58,9 @@ function Addon.UpdateBackgroundColor()
         absorbFrame:SetBackdropColor(1, 1, 0, 1)
     end
 end
+
+function Addon.UpdateFrameSize()
+    InitModuleReferences()
+    if not absorbFrame then return end
+    absorbFrame:SetSize(db.width or 70, db.height or 70)
+end

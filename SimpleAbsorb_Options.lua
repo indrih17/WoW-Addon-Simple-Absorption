@@ -102,15 +102,16 @@ function Addon.CreateConfigFrame()
 
     -- Создаём фрейм
     local f = CreateFrame("Frame", "SimpleAbsorbConfigFrame", UIParent, "BackdropTemplate")
-    f:SetSize(300, 400)
+    f:SetSize(300, 450)
     f:SetPoint("CENTER")
     f:SetBackdrop({
-        bgFile = "Interface/DialogFrame/UI-DialogBox-Background",
+        bgFile = "Interface/Buttons/WHITE8x8",
         edgeFile = "Interface/DialogFrame/UI-DialogBox-Border",
         tile = true, tileSize = 32, edgeSize = 32,
         insets = { left = 8, right = 8, top = 8, bottom = 8 }
     })
     f:Hide()
+    f:SetBackdropColor(0.1, 0.1, 0.1, 0.9)
     f:SetFrameStrata("DIALOG")
 
     -- Весь фрейм можно перетаскивать
@@ -136,9 +137,111 @@ function Addon.CreateConfigFrame()
     closeBtn:SetPoint("TOPRIGHT", f, "TOPRIGHT", -2, -2)
     closeBtn:SetScript("OnClick", function() f:Hide() end)
 
+    -- Лейбл для ширины
+    local widthLabel = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    widthLabel:SetPoint("TOPLEFT", f, "TOPLEFT", 20, -50)
+    widthLabel:SetText("Width:")
+
+    -- Поле ввода ширины
+    local widthInput = CreateFrame("EditBox", nil, f, "InputBoxTemplate")
+    widthInput:SetSize(60, 20)
+    widthInput:SetPoint("LEFT", widthLabel, "RIGHT", 14, 0)
+    widthInput:SetAutoFocus(false)
+    widthInput:SetText(tostring(db.width or 70))
+
+    -- Кастомная проверка для ширины (только положительные числа)
+    widthInput:SetScript("OnTextChanged", function(self, userInput)
+        if userInput then
+            local text = self:GetText()
+            -- Разрешаем только положительные числа
+            if text == "" or text:match("^%d+$") then
+                self.oldText = text
+            else
+                self:SetText(self.oldText or "")
+            end
+        end
+    end)
+
+    widthInput:SetScript("OnEnterPressed", function(self)
+        local text = self:GetText()
+        if text == "" then
+            text = "70"
+            self:SetText("70")
+        end
+
+        local val = tonumber(text)
+        if val then
+            -- Ограничиваем разумными значениями
+            val = math.max(50, math.min(500, val))  -- Минимум 50, максимум 500
+            db.width = val
+            self:SetText(tostring(val))
+
+            Addon.UpdateFrameSize()
+        end
+        self:ClearFocus()
+    end)
+
+    widthInput:SetScript("OnEscapePressed", function(self)
+        self:SetText(tostring(db.width or 70))
+        self:ClearFocus()
+    end)
+
+    f.widthInput = widthInput
+
+    -- Лейбл для высоты
+    local heightLabel = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    heightLabel:SetPoint("TOPLEFT", widthLabel, "BOTTOMLEFT", 0, -20)
+    heightLabel:SetText("Height:")
+
+    -- Поле ввода высоты
+    local heightInput = CreateFrame("EditBox", nil, f, "InputBoxTemplate")
+    heightInput:SetSize(60, 20)
+    heightInput:SetPoint("LEFT", heightLabel, "RIGHT", 10, 0)
+    heightInput:SetAutoFocus(false)
+    heightInput:SetText(tostring(db.height or 70))
+
+    -- Кастомная проверка для высоты (только положительные числа)
+    heightInput:SetScript("OnTextChanged", function(self, userInput)
+        if userInput then
+            local text = self:GetText()
+            -- Разрешаем только положительные числа
+            if text == "" or text:match("^%d+$") then
+                self.oldText = text
+            else
+                self:SetText(self.oldText or "")
+            end
+        end
+    end)
+
+    heightInput:SetScript("OnEnterPressed", function(self)
+        local text = self:GetText()
+        if text == "" then
+            text = "70"
+            self:SetText("70")
+        end
+
+        local val = tonumber(text)
+        if val then
+            -- Ограничиваем разумными значениями
+            val = math.max(20, math.min(200, val))  -- Минимум 20, максимум 200
+            db.height = val
+            self:SetText(tostring(val))
+
+            Addon.UpdateFrameSize()
+        end
+        self:ClearFocus()
+    end)
+
+    heightInput:SetScript("OnEscapePressed", function(self)
+        self:SetText(tostring(db.height or 70))
+        self:ClearFocus()
+    end)
+
+    f.heightInput = heightInput
+
     -- Чекбокс Lock
     local lockCheck = CreateFrame("CheckButton", "SimpleAbsorbLockCheck", f, "UICheckButtonTemplate")
-    lockCheck:SetPoint("TOPLEFT", f, "TOPLEFT", 20, -50)
+    lockCheck:SetPoint("TOPLEFT", heightLabel, "BOTTOMLEFT", -3, -20)
     _G[lockCheck:GetName() .. "Text"]:SetText("Lock Position")
 
     lockCheck:SetChecked(db.locked)

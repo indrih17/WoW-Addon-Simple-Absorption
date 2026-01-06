@@ -18,7 +18,7 @@ end
 
 local function CreateAbsorbFrame()
     local f = CreateFrame("Frame", "SimpleAbsorbDisplayFrame", UIParent, "BackdropTemplate")
-    f:SetSize(70, 70)
+    f:SetSize(db.width or 70, db.height or 70)
     f:SetPoint("CENTER", UIParent, "CENTER", db.x, db.y)
     
     f:SetMovable(true)
