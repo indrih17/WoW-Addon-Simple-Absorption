@@ -2,4 +2,4 @@ Required dependencies for work: `LibSharedMedia-3.0`
 
 For customization you can use `/simpleabs` and `/sa`.
 
-<img width="393" height="557" alt="image" src="https://github.com/user-attachments/assets/a131e82f-0d10-4a38-b081-41c368bd2d92" />
+<img width="613" height="636" alt="Снимок экрана 2026-01-06 231636" src="https://github.com/user-attachments/assets/adf87b32-34f5-41f4-ac82-64d947a539b4" />
