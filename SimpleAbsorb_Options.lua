@@ -304,15 +304,127 @@ function Addon.CreateConfigFrame()
 
     f.dropdown = fontDropdown
 
+    -- Лейбл для размера шрифта
+    local fontSizeLabel = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    fontSizeLabel:SetPoint("TOPLEFT", fontDropdown, "BOTTOMLEFT", 20, -10)
+    fontSizeLabel:SetText("Font Size:")
+
+    -- Поле ввода размера шрифта
+    local fontSizeInput = CreateFrame("EditBox", nil, f, "InputBoxTemplate")
+    fontSizeInput:SetSize(60, 20)
+    fontSizeInput:SetPoint("LEFT", fontSizeLabel, "RIGHT", 10, 0)
+    fontSizeInput:SetAutoFocus(false)
+    fontSizeInput:SetText(tostring(db.fontSize or 24))
+
+    -- Кастомная проверка для поддержки только чисел
+    fontSizeInput:SetScript("OnTextChanged", function(self, userInput)
+        if userInput then
+            local text = self:GetText()
+            -- Разрешаем только числа
+            if text == "" or text:match("^%d+$") then
+                self:GetParent().fontSizeInput.oldText = text
+            else
+                self:SetText(self.oldText or "")
+            end
+        end
+    end)
+
+    fontSizeInput:SetScript("OnEnterPressed", function(self)
+        local text = self:GetText()
+        if text == "" then
+            text = "24"
+            self:SetText("24")
+        end
+
+        local val = tonumber(text)
+        if val then
+            -- Ограничиваем разумными значениями
+            val = math.max(8, math.min(72, val))  -- Минимум 8, максимум 72
+            db.fontSize = val
+            self:SetText(tostring(val))
+
+            if Addon.UpdateFont then
+                Addon.UpdateFont()
+            end
+        end
+        self:ClearFocus()
+    end)
+
+    fontSizeInput:SetScript("OnEscapePressed", function(self)
+        self:SetText(tostring(db.fontSize or 24))
+        self:ClearFocus()
+    end)
+
+    f.fontSizeInput = fontSizeInput
+
+    -- Слайдер для размера шрифта (опционально, но удобнее)
+    local fontSizeSlider = CreateFrame("Slider", "SimpleAbsorbFontSizeSlider", f, "OptionsSliderTemplate")
+    fontSizeSlider:SetPoint("LEFT", fontSizeInput, "RIGHT", 20, 0)
+    fontSizeSlider:SetWidth(100)
+    fontSizeSlider:SetMinMaxValues(8, 72)  -- Минимум 8, максимум 72
+    fontSizeSlider:SetValueStep(1)
+    fontSizeSlider:SetValue(db.fontSize or 24)
+    _G[fontSizeSlider:GetName() .. "Low"]:SetText("8")
+    _G[fontSizeSlider:GetName() .. "High"]:SetText("72")
+    _G[fontSizeSlider:GetName() .. "Text"]:SetText(tostring(db.fontSize or 24))
+
+    fontSizeSlider:SetScript("OnValueChanged", function(self, value)
+        value = math.floor(value)
+        db.fontSize = value
+        _G[self:GetName() .. "Text"]:SetText(tostring(value))
+
+        -- Обновляем текстовое поле
+        if not fontSizeInput:HasFocus() then
+            fontSizeInput:SetText(tostring(value))
+            fontSizeInput.oldText = tostring(value)
+        end
+
+        if Addon.UpdateFont then
+            Addon.UpdateFont()
+        end
+    end)
+
+    -- Синхронизация слайдера и текстового поля
+    fontSizeInput:SetScript("OnTextChanged", function(self, userInput)
+        if userInput then
+            local text = self:GetText()
+            -- Разрешаем только числа
+            if text == "" or text:match("^%d+$") then
+                self:GetParent().fontSizeInput.oldText = text
+
+                -- Обновляем слайдер
+                local val = tonumber(text)
+                if val then
+                    val = math.max(8, math.min(72, val))
+                    fontSizeSlider:SetValue(val)
+                end
+            else
+                self:SetText(self.oldText or "")
+            end
+        end
+    end)
+
     -- Color Picker для цвета текста
     local fontColorContainer, _, updateFontColorFunc = CreateColorPickerButton(f, "Font Color", db.fontColor, Addon.UpdateFont)
-    fontColorContainer:SetPoint("TOPLEFT", fontDropdown, "BOTTOMLEFT", 20, -10)
+    fontColorContainer:SetPoint("TOPLEFT", fontSizeLabel, "BOTTOMLEFT", 0, -10)
     f._updateFontColor = updateFontColorFunc
 
     -- Color Picker для цвета бэкграунда
     local bgColorContainer, _, updateBgColorFunc = CreateColorPickerButton(f, "Background Color", db.bgColor, Addon.UpdateBackgroundColor)
     bgColorContainer:SetPoint("TOPLEFT", fontColorContainer, "BOTTOMLEFT", 0, -10)
     f._updateBgColor = updateBgColorFunc
+
+    -- Чекбокс "Обесцветить когда 0"
+    local desaturateCheck = CreateFrame("CheckButton", "SimpleAbsorbDesaturateCheck", f, "UICheckButtonTemplate")
+    desaturateCheck:SetPoint("TOPLEFT", bgColorContainer, "BOTTOMLEFT", 0, -10)
+    _G[desaturateCheck:GetName() .. "Text"]:SetText("Desaturate at 0")
+
+    desaturateCheck:SetChecked(db.desaturateAtZero or false)
+    desaturateCheck:SetScript("OnClick", function(self)
+        db.desaturateAtZero = self:GetChecked()
+    end)
+
+    f.desaturateCheck = desaturateCheck
 
     -- Функция обновления полей ввода (используется вне этого файла)
     function f:UpdateInputs()

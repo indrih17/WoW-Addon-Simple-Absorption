@@ -32,13 +32,7 @@ function Addon.UpdateFont()
     local flag = db.fontFlag or "OUTLINE"
 
     absorbFrame.text:SetFont(fontPath, size, flag)
-
-    -- Применяем цвет
-    if db.fontColor and type(db.fontColor) == "table" then
-        absorbFrame.text:SetTextColor(unpack(db.fontColor))
-    else
-        absorbFrame.text:SetTextColor(1, 1, 1, 1)
-    end
+    absorbFrame.text:SetTextColor(unpack(db.fontColor))
 end
 
 function Addon.UpdateBackgroundColor()

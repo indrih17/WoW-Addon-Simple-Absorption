@@ -3,7 +3,7 @@ local AddonName, Addon = ...
 
 -- Локальные переменные для быстрого доступа
 local db
-local absorbFrame, configFrame
+local configFrame
 
 -- Инициализация библиотеки LibSharedMedia
 local function InitLibSharedMedia()
@@ -59,6 +59,10 @@ local function CreateAbsorbFrame()
             local total = UnitGetTotalAbsorbs("player") or 0
             self.text:SetText(AbbreviateNumbers(total))
             self.text:Show()
+            if db.desaturateAtZero then
+                db.bgColor[4] = total
+                Addon.UpdateBackgroundColor()
+            end
         end
     end)
 
@@ -92,6 +96,14 @@ local function InitAddonDb()
 
     if db.locked == nil then db.locked = false end
     if type(db.fontSize) ~= "number" then db.fontSize = 24 end
+
+    if db.desaturateAtZero == nil then
+        db.desaturateAtZero = false
+    end
+
+    if type(db.fontSize) ~= "number" then
+        db.fontSize = 24  -- Размер по умолчанию
+    end
 end
 
 local function UpdateConfigFrame()
@@ -122,12 +134,7 @@ local function OnAddonLoad(self, event, addonName)
 
     Addon.absorbFrame = CreateAbsorbFrame()
     Addon.UpdateFont()
-
-    absorbFrame = Addon.absorbFrame
-    if absorbFrame then
-        absorbFrame:EnableMouse(not db.locked)
-        Addon.UpdateBackgroundColor()
-    end
+    Addon.UpdateBackgroundColor()
 
     SLASH_SIMPLEABSORB1 = "/simpleabs"
     SLASH_SIMPLEABSORB2 = "/sa"
