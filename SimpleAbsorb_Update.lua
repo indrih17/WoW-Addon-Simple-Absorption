@@ -6,9 +6,11 @@ local db, absorbFrame, LSM
 
 -- Функция инициализации локальных ссылок
 local function InitModuleReferences()
-    db = Addon.db
-    absorbFrame = Addon.absorbFrame
-    LSM = Addon.LSM
+    if absorbFrame == nil then
+        db = Addon.db
+        absorbFrame = Addon.absorbFrame
+        LSM = Addon.LSM
+    end
 end
 
 -- ---------------------------------------------------------------------------
@@ -40,11 +42,20 @@ function Addon.UpdateBackgroundColor()
     if not absorbFrame then return end
 
     -- Устанавливаем бэкграунд
-    absorbFrame:SetBackdrop({
-        bgFile = "Interface/Tooltips/UI-Tooltip-Background",
-        tile = true,
-        tileSize = 16
-    })
+    if db.background == nil then
+        absorbFrame:SetBackdrop({
+            bgFile = "Interface/Tooltips/UI-Tooltip-Background",
+            tile = true,
+            tileSize = 16
+        })
+    else
+        local texturePath = LSM:Fetch("background", db.background) -- Или имя из списка
+        absorbFrame:SetBackdrop({
+            bgFile = texturePath,
+            tile = true,
+            tileSize = 16
+        })
+    end
 
     -- Применяем цвет из настроек
     if db.bgColor and type(db.bgColor) == "table" then
@@ -57,6 +68,7 @@ function Addon.UpdateBackgroundColor()
         -- Цвет по умолчанию
         absorbFrame:SetBackdropColor(1, 1, 0, 1)
     end
+
 end
 
 function Addon.UpdateFrameSize()

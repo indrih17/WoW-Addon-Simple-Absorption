@@ -6,8 +6,10 @@ local db, absorbFrame
 
 -- Функция инициализации локальных ссылок
 local function InitModuleReferences()
-    db = Addon.db
-    absorbFrame = Addon.absorbFrame
+    if absorbFrame == nil then
+        db = Addon.db
+        absorbFrame = Addon.absorbFrame
+    end
 end
 
 -- ---------------------------------------------------------------------------
@@ -102,7 +104,7 @@ function Addon.CreateConfigFrame()
 
     -- Создаём фрейм
     local f = CreateFrame("Frame", "SimpleAbsorbConfigFrame", UIParent, "BackdropTemplate")
-    f:SetSize(300, 450)
+    f:SetSize(300, 500)
     f:SetPoint("CENTER")
     f:SetBackdrop({
         bgFile = "Interface/Buttons/WHITE8x8",
@@ -362,14 +364,14 @@ function Addon.CreateConfigFrame()
     local fontDropdown = CreateFrame("Frame", "SimpleAbsorbFontDropdown", f, "UIDropDownMenuTemplate")
     fontDropdown:SetPoint("LEFT", fontLabel, "BOTTOMLEFT", -20, -20)
 
-    local function OnSelect(self)
+    local function FontOnSelect(self)
         db.font = self.value
         UIDropDownMenu_SetSelectedValue(fontDropdown, self.value)
         UIDropDownMenu_SetText(fontDropdown, self.value)
         Addon.UpdateFont()
     end
 
-    local function InitializeDropdown()
+    local function FontsDropdown()
         local info = UIDropDownMenu_CreateInfo()
         local fonts = {}
 
@@ -391,14 +393,14 @@ function Addon.CreateConfigFrame()
             if fontName then
                 info.text = fontName
                 info.value = fontName
-                info.func = OnSelect
+                info.func = FontOnSelect
                 info.checked = (db.font == fontName)
                 UIDropDownMenu_AddButton(info)
             end
         end
     end
 
-    UIDropDownMenu_Initialize(fontDropdown, InitializeDropdown)
+    UIDropDownMenu_Initialize(fontDropdown, FontsDropdown)
     UIDropDownMenu_SetWidth(fontDropdown, 180)
 
     -- ИСПРАВЛЕНИЕ: Принудительная установка текста и значения после инициализации
@@ -517,9 +519,49 @@ function Addon.CreateConfigFrame()
     bgColorContainer:SetPoint("TOPLEFT", fontColorContainer, "BOTTOMLEFT", 0, -10)
     f._updateBgColor = updateBgColorFunc
 
+    -- Дропдаун текстур для бэкграунда
+    local textureDropdown = CreateFrame("Frame", "SimpleAbsorbFontDropdown", f, "UIDropDownMenuTemplate")
+    textureDropdown:SetPoint("TOPLEFT", bgColorContainer, "BOTTOMLEFT", 0, -10)
+
+    local function TextureOnSelect(self)
+        db.background = self.value
+        UIDropDownMenu_SetSelectedValue(textureDropdown, self.value)
+        UIDropDownMenu_SetText(textureDropdown, self.value)
+        Addon.UpdateBackgroundColor()
+    end
+
+    local function TexturesDropdown()
+        local info = UIDropDownMenu_CreateInfo()
+        local textures = {}
+
+        if Addon.LSM then
+            local list = Addon.LSM:List("background")
+            if list and #list > 0 then
+                textures = list
+            end
+        end
+
+        for _, texture in ipairs(textures) do
+            if texture then
+                info.text = texture
+                info.value = texture
+                info.func = TextureOnSelect
+                info.checked = (db.background == texture)
+                UIDropDownMenu_AddButton(info)
+            end
+        end
+    end
+
+    UIDropDownMenu_Initialize(textureDropdown, TexturesDropdown)
+    UIDropDownMenu_SetWidth(textureDropdown, 180)
+
+    -- ИСПРАВЛЕНИЕ: Принудительная установка текста и значения после инициализации
+    UIDropDownMenu_SetSelectedValue(textureDropdown, db.background)
+    UIDropDownMenu_SetText(textureDropdown, db.background)
+
     -- Чекбокс "Обесцветить когда 0"
     local desaturateCheck = CreateFrame("CheckButton", "SimpleAbsorbDesaturateCheck", f, "UICheckButtonTemplate")
-    desaturateCheck:SetPoint("TOPLEFT", bgColorContainer, "BOTTOMLEFT", 0, -10)
+    desaturateCheck:SetPoint("TOPLEFT", textureDropdown, "BOTTOMLEFT", 0, -10)
     _G[desaturateCheck:GetName() .. "Text"]:SetText("Desaturate at 0")
 
     desaturateCheck:SetChecked(db.desaturateAtZero or false)
