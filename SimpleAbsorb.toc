@@ -2,7 +2,8 @@
 ## Title: SimpleAbsorb
 ## Notes: SimpleAbsorb
 ## Author: Indrih
-## Version: 0.1
+## Version: 0.2
+## X-Curse-Project-ID: 1422365
 ## OptionalDeps: LibSharedMedia-3.0
 ## SavedVariablesPerCharacter: SimpleAbsorbDB
 SimpleAbsorb.lua
